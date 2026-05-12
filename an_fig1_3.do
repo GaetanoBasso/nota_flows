@@ -197,9 +197,9 @@ restore
    π_E ∝ λ_UE·(λ_IU+λ_IE) + λ_UI·λ_IE  =  u_e*(i_u+i_e) + u_i*i_e
    u*  = π_U/(π_U+π_E)  [U/(E+U), quota sulla forza lavoro]
 
- Sei controfattuali (riferimento 2004-2021):
-   dal 2022 si lascia variare UN flusso, gli altri cinque restano
-   alla media 2004-2021. Prima del 2022 ogni CF = steady-state osservato.
+ Sei controfattuali (riferimento pre-crisi 2004-2007), sull'intero periodo:
+   per ciascuno UN flusso varia liberamente, gli altri cinque sono fissi
+   alla media 2004-2007 (stesso schema di Fig 1B sul modello a 2 stati).
    CF_ue: U->E varia   CF_eu: E->U varia   CF_ei: E->I varia
    CF_ui: U->I varia   CF_iu: I->U varia   CF_ie: I->E varia
 
@@ -212,53 +212,49 @@ gen _DEN3q = u_e_q1only*(i_u_q1only+i_e_q1only) + u_i_q1only*i_e_q1only
 gen ur_ss3  = 100 * _NUM3q / (_NUM3q + _DEN3q)
 drop _NUM3q _DEN3q
 
-* -- Medie 2004-2021 per i 6 tassi (valore fisso nei CF dal 2022) --
+* -- Medie pre-crisi 2004-2007 per i 6 tassi (stessa finestra di Fig 1B) --
 foreach r in e_u u_e e_i u_i i_u i_e {
-    quietly summ `r'_q1only if anno <= 2021
+    quietly summ `r'_q1only if anno <= 2007
     local `r'_b = r(mean)
 }
 
-* Macro di comodo: NUM e DEN osservati (usati per anno < 2022, CF = SS_obs)
-local NUM_obs "e_u_q1only*(i_u_q1only+i_e_q1only) + e_i_q1only*i_u_q1only"
-local DEN_obs "u_e_q1only*(i_u_q1only+i_e_q1only) + u_i_q1only*i_e_q1only"
-
-* CF_ue: solo U->E varia dal 2022; e_u, e_i, u_i, i_u, i_e fissi al 2004-2021
-gen _N1 = cond(anno<2022, `NUM_obs', `e_u_b'*(`i_u_b'+`i_e_b') + `e_i_b'*`i_u_b')
-gen _D1 = cond(anno<2022, `DEN_obs',  u_e_q1only*(`i_u_b'+`i_e_b') + `u_i_b'*`i_e_b')
+* CF_ue: U->E varia; e_u, e_i, u_i, i_u, i_e fissi al 2004-2007
+gen _N1 = `e_u_b'*(`i_u_b'+`i_e_b') + `e_i_b'*`i_u_b'
+gen _D1 = u_e_q1only*(`i_u_b'+`i_e_b') + `u_i_b'*`i_e_b'
 gen ur_cf3_ue = 100 * _N1 / (_N1 + _D1)
 drop _N1 _D1
 
-* CF_eu: solo E->U varia dal 2022; u_e, e_i, u_i, i_u, i_e fissi al 2004-2021
-gen _N2 = cond(anno<2022, `NUM_obs',  e_u_q1only*(`i_u_b'+`i_e_b') + `e_i_b'*`i_u_b')
-gen _D2 = cond(anno<2022, `DEN_obs', `u_e_b'*(`i_u_b'+`i_e_b') + `u_i_b'*`i_e_b')
+* CF_eu: E->U varia; u_e, e_i, u_i, i_u, i_e fissi al 2004-2007
+gen _N2 = e_u_q1only*(`i_u_b'+`i_e_b') + `e_i_b'*`i_u_b'
+gen _D2 = `u_e_b'*(`i_u_b'+`i_e_b') + `u_i_b'*`i_e_b'
 gen ur_cf3_eu = 100 * _N2 / (_N2 + _D2)
 drop _N2 _D2
 
-* CF_ei: solo E->I varia dal 2022; e_u, u_e, u_i, i_u, i_e fissi al 2004-2021
-gen _N3 = cond(anno<2022, `NUM_obs', `e_u_b'*(`i_u_b'+`i_e_b') + e_i_q1only*`i_u_b')
-gen _D3 = cond(anno<2022, `DEN_obs', `u_e_b'*(`i_u_b'+`i_e_b') + `u_i_b'*`i_e_b')
+* CF_ei: E->I varia; e_u, u_e, u_i, i_u, i_e fissi al 2004-2007
+gen _N3 = `e_u_b'*(`i_u_b'+`i_e_b') + e_i_q1only*`i_u_b'
+gen _D3 = `u_e_b'*(`i_u_b'+`i_e_b') + `u_i_b'*`i_e_b'
 gen ur_cf3_ei = 100 * _N3 / (_N3 + _D3)
 drop _N3 _D3
 
-* CF_ui: solo U->I varia dal 2022; e_u, u_e, e_i, i_u, i_e fissi al 2004-2021
-gen _N4 = cond(anno<2022, `NUM_obs', `e_u_b'*(`i_u_b'+`i_e_b') + `e_i_b'*`i_u_b')
-gen _D4 = cond(anno<2022, `DEN_obs', `u_e_b'*(`i_u_b'+`i_e_b') + u_i_q1only*`i_e_b')
+* CF_ui: U->I varia; e_u, u_e, e_i, i_u, i_e fissi al 2004-2007
+gen _N4 = `e_u_b'*(`i_u_b'+`i_e_b') + `e_i_b'*`i_u_b'
+gen _D4 = `u_e_b'*(`i_u_b'+`i_e_b') + u_i_q1only*`i_e_b'
 gen ur_cf3_ui = 100 * _N4 / (_N4 + _D4)
 drop _N4 _D4
 
-* CF_iu: solo I->U varia dal 2022; e_u, u_e, e_i, u_i, i_e fissi al 2004-2021
-gen _N5 = cond(anno<2022, `NUM_obs', `e_u_b'*(i_u_q1only+`i_e_b') + `e_i_b'*i_u_q1only)
-gen _D5 = cond(anno<2022, `DEN_obs', `u_e_b'*(i_u_q1only+`i_e_b') + `u_i_b'*`i_e_b')
+* CF_iu: I->U varia; e_u, u_e, e_i, u_i, i_e fissi al 2004-2007
+gen _N5 = `e_u_b'*(i_u_q1only+`i_e_b') + `e_i_b'*i_u_q1only
+gen _D5 = `u_e_b'*(i_u_q1only+`i_e_b') + `u_i_b'*`i_e_b'
 gen ur_cf3_iu = 100 * _N5 / (_N5 + _D5)
 drop _N5 _D5
 
-* CF_ie: solo I->E varia dal 2022; e_u, u_e, e_i, u_i, i_u fissi al 2004-2021
-gen _N6 = cond(anno<2022, `NUM_obs', `e_u_b'*(`i_u_b'+i_e_q1only) + `e_i_b'*`i_u_b')
-gen _D6 = cond(anno<2022, `DEN_obs', `u_e_b'*(`i_u_b'+i_e_q1only) + `u_i_b'*i_e_q1only)
+* CF_ie: I->E varia; e_u, u_e, e_i, u_i, i_u fissi al 2004-2007
+gen _N6 = `e_u_b'*(`i_u_b'+i_e_q1only) + `e_i_b'*`i_u_b'
+gen _D6 = `u_e_b'*(`i_u_b'+i_e_q1only) + `u_i_b'*i_e_q1only
 gen ur_cf3_ie = 100 * _N6 / (_N6 + _D6)
 drop _N6 _D6
 
-* Grafico (prima del 2022 tutti i CF coincidono con ur_ss3 per costruzione)
+* Grafico
 twoway ///
     (line ur          anno, lcolor(black)        lwidth(medthick)) ///
     (line ur_ss3      anno, lcolor(black)        lwidth(medium) lp(dash)) ///
@@ -268,7 +264,6 @@ twoway ///
     (line ur_cf3_ui   anno, lcolor(orange)       lwidth(medium) lp(shortdash)) ///
     (line ur_cf3_iu   anno, lcolor(purple)       lwidth(medium) lp(dot)) ///
     (line ur_cf3_ie   anno, lcolor(sienna)       lwidth(medium) lp(dot)), ///
-    xline(2022, lcolor(gs10) lp(dot)) ///
     xlabel(2004(2)2025) xtitle("") ///
     ytitle("Tasso di disoccupazione (%)") ylab(, angle(0)) ///
     legend(order(1 "Osservato" 2 "Steady-state (3 flussi)" ///
@@ -292,12 +287,12 @@ preserve
     label var anno          "Anno"
     label var ur            "Tasso di disoccupazione osservato"
     label var ur_ss3        "Steady-state (3 flussi, Shimer 2012, Q1)"
-    label var ur_cf3_ue     "CF: solo U->E varia dal 2022 (altri fissi al 2004-21)"
-    label var ur_cf3_eu     "CF: solo E->U varia dal 2022 (altri fissi al 2004-21)"
-    label var ur_cf3_ei     "CF: solo E->I varia dal 2022 (altri fissi al 2004-21)"
-    label var ur_cf3_ui     "CF: solo U->I varia dal 2022 (altri fissi al 2004-21)"
-    label var ur_cf3_iu     "CF: solo I->U varia dal 2022 (altri fissi al 2004-21)"
-    label var ur_cf3_ie     "CF: solo I->E varia dal 2022 (altri fissi al 2004-21)"
+    label var ur_cf3_ue     "CF: U->E varia, altri 5 fissi al 2004-07"
+    label var ur_cf3_eu     "CF: E->U varia, altri 5 fissi al 2004-07"
+    label var ur_cf3_ei     "CF: E->I varia, altri 5 fissi al 2004-07"
+    label var ur_cf3_ui     "CF: U->I varia, altri 5 fissi al 2004-07"
+    label var ur_cf3_iu     "CF: I->U varia, altri 5 fissi al 2004-07"
+    label var ur_cf3_ie     "CF: I->E varia, altri 5 fissi al 2004-07"
     label var ur_ss3_4q     "Steady-state (3 flussi, 4 trim.)"
     export excel using "`figfile'", sheet("Fig3_pannello_b") sheetreplace firstrow(varlabels)
 restore
