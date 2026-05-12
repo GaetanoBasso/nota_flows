@@ -192,32 +192,25 @@ restore
  FIGURA 3B
  Tasso di disoccupazione controfattuale – modello a 3 stati (E, U, I)
 
- Notazione (Elsby et al. 2015):
-   s = e_u  (E→U),    f = u_e  (U→E)
-   δ = e_i  (E→I),    η = u_i  (U→I)
-   μ = i_u  (I→U),    ν = i_e  (I→E)
+ Shimer (2012, RED, eq. unnumbered + eq. 7):
+   π_U ∝ λ_EU·(λ_IU+λ_IE) + λ_EI·λ_IU  =  e_u*(i_u+i_e) + e_i*i_u
+   π_E ∝ λ_UE·(λ_IU+λ_IE) + λ_UI·λ_IE  =  u_e*(i_u+i_e) + u_i*i_e
+   u*  = π_U/(π_U+π_E)  [U/(E+U), quota sulla forza lavoro]
 
- Soluzione dello steady-state (equazioni di bilancio dei flussi):
-   Denominator D = f·(μ+ν) + ν·η
-   π_U/π_E = [ s·(μ+ν) + μ·δ ] / D
-   π_I/π_E = [ δ·(f+η)  + s·η ] / D
-   u*       = π_U / (π_E + π_U + π_I)
+ Sei controfattuali (riferimento pre-crisi 2004-2007):
+   per ciascuno si fissa UN flusso al livello pre-crisi,
+   lasciando variare liberamente gli altri cinque.
+   CF_ue: U→E fisso   CF_eu: E→U fisso   CF_ei: E→I fisso
+   CF_ui: U→I fisso   CF_iu: I→U fisso   CF_ie: I→E fisso
 
- Quattro controfattuali (riferimento pre-crisi 2004-2007):
-   CF1: solo U→E (f) varia; s, δ, η, μ, ν al pre-crisi
-   CF2: solo E→U (s) varia; tutto il resto al pre-crisi
-   CF3: solo flussi da/verso inattività (μ, ν, δ, η) variano
-   CF4: solo E→nonE (s + δ) varia; tutto il resto al pre-crisi
-
- Robustezza (tutti i trimestri, 2013-2025): CF1 con 4 trimestri
+ Robustezza: steady-state con tutti i trimestri (2013-2025)
 ==============================================================================*/
 
-* -- Steady-state a 3 flussi (Q1 only) --
-gen _D3q   = u_e_q1only*(i_u_q1only+i_e_q1only) + i_e_q1only*u_i_q1only
-gen _piU3q = (e_u_q1only*(i_u_q1only+i_e_q1only) + i_u_q1only*e_i_q1only) / _D3q
-gen _piI3q = (e_i_q1only*(u_e_q1only+u_i_q1only) + e_u_q1only*u_i_q1only) / _D3q
-gen ur_ss3  = 100 * _piU3q / (1 + _piU3q + _piI3q)
-drop _D3q _piU3q _piI3q
+* -- Steady-state a 3 flussi (Shimer 2012) --
+gen _NUM3q = e_u_q1only*(i_u_q1only+i_e_q1only) + e_i_q1only*i_u_q1only
+gen _DEN3q = u_e_q1only*(i_u_q1only+i_e_q1only) + u_i_q1only*i_e_q1only
+gen ur_ss3  = 100 * _NUM3q / (_NUM3q + _DEN3q)
+drop _NUM3q _DEN3q
 
 * -- Medie pre-crisi (2004-2007) per i 6 tassi --
 foreach r in e_u u_e e_i u_i i_u i_e {
@@ -225,86 +218,83 @@ foreach r in e_u u_e e_i u_i i_u i_e {
     local `r'_bar = r(mean)
 }
 
-* CF1: solo f = u_e varia; tutti gli altri al pre-crisi
-local D_cf1 "u_e_q1only*(`i_u_bar'+`i_e_bar') + `i_e_bar'*`u_i_bar'"
-gen _D1 = `D_cf1'
-gen _pU1 = (`e_u_bar'*(`i_u_bar'+`i_e_bar') + `i_u_bar'*`e_i_bar') / _D1
-gen _pI1 = (`e_i_bar'*(u_e_q1only+`u_i_bar') + `e_u_bar'*`u_i_bar') / _D1
-gen ur_cf3_find = 100 * _pU1 / (1 + _pU1 + _pI1)
-drop _D1 _pU1 _pI1
+* CF_ue: U→E fisso al pre-crisi (non appare nel numeratore)
+gen _N1 = e_u_q1only*(i_u_q1only+i_e_q1only) + e_i_q1only*i_u_q1only
+gen _D1 = `u_e_bar'*(i_u_q1only+i_e_q1only) + u_i_q1only*i_e_q1only
+gen ur_cf3_ue = 100 * _N1 / (_N1 + _D1)
+drop _N1 _D1
 
-* CF2: solo s = e_u varia; tutti gli altri al pre-crisi
-local D_cf2 "`u_e_bar'*(`i_u_bar'+`i_e_bar') + `i_e_bar'*`u_i_bar'"
-gen _D2 = `D_cf2'
-gen _pU2 = (e_u_q1only*(`i_u_bar'+`i_e_bar') + `i_u_bar'*`e_i_bar') / _D2
-gen _pI2 = (`e_i_bar'*(`u_e_bar'+`u_i_bar') + e_u_q1only*`u_i_bar') / _D2
-gen ur_cf3_sep = 100 * _pU2 / (1 + _pU2 + _pI2)
-drop _D2 _pU2 _pI2
+* CF_eu: E→U fisso al pre-crisi (non appare nel denominatore)
+gen _N2 = `e_u_bar'*(i_u_q1only+i_e_q1only) + e_i_q1only*i_u_q1only
+gen _D2 = u_e_q1only*(i_u_q1only+i_e_q1only) + u_i_q1only*i_e_q1only
+gen ur_cf3_eu = 100 * _N2 / (_N2 + _D2)
+drop _N2 _D2
 
-* CF3: solo flussi da/verso inattività (μ, ν, δ, η) variano; s, f al pre-crisi
-gen _D3 = `u_e_bar'*(i_u_q1only+i_e_q1only) + i_e_q1only*u_i_q1only
-gen _pU3 = (`e_u_bar'*(i_u_q1only+i_e_q1only) + i_u_q1only*e_i_q1only) / _D3
-gen _pI3 = (e_i_q1only*(`u_e_bar'+u_i_q1only) + `e_u_bar'*u_i_q1only) / _D3
-gen ur_cf3_inact = 100 * _pU3 / (1 + _pU3 + _pI3)
-drop _D3 _pU3 _pI3
+* CF_ei: E→I fisso al pre-crisi (appare solo nel numeratore come e_i*i_u)
+gen _N3 = e_u_q1only*(i_u_q1only+i_e_q1only) + `e_i_bar'*i_u_q1only
+gen _D3 = u_e_q1only*(i_u_q1only+i_e_q1only) + u_i_q1only*i_e_q1only
+gen ur_cf3_ei = 100 * _N3 / (_N3 + _D3)
+drop _N3 _D3
 
-* CF4: solo E→nonE (s=e_u e δ=e_i) variano; f, η, μ, ν al pre-crisi
-gen _D4 = `u_e_bar'*(`i_u_bar'+`i_e_bar') + `i_e_bar'*`u_i_bar'
-gen _pU4 = (e_u_q1only*(`i_u_bar'+`i_e_bar') + `i_u_bar'*e_i_q1only) / _D4
-gen _pI4 = (e_i_q1only*(`u_e_bar'+`u_i_bar') + e_u_q1only*`u_i_bar') / _D4
-gen ur_cf3_enonE = 100 * _pU4 / (1 + _pU4 + _pI4)
-drop _D4 _pU4 _pI4
+* CF_ui: U→I fisso al pre-crisi (appare solo nel denominatore come u_i*i_e)
+gen _N4 = e_u_q1only*(i_u_q1only+i_e_q1only) + e_i_q1only*i_u_q1only
+gen _D4 = u_e_q1only*(i_u_q1only+i_e_q1only) + `u_i_bar'*i_e_q1only
+gen ur_cf3_ui = 100 * _N4 / (_N4 + _D4)
+drop _N4 _D4
+
+* CF_iu: I→U fisso al pre-crisi (appare in entrambi: e_u*(i_u+i_e)+e_i*i_u e u_e*(i_u+i_e))
+gen _N5 = e_u_q1only*(`i_u_bar'+i_e_q1only) + e_i_q1only*`i_u_bar'
+gen _D5 = u_e_q1only*(`i_u_bar'+i_e_q1only) + u_i_q1only*i_e_q1only
+gen ur_cf3_iu = 100 * _N5 / (_N5 + _D5)
+drop _N5 _D5
+
+* CF_ie: I→E fisso al pre-crisi (appare in entrambi: e_u*(i_u+i_e) e u_e*(i_u+i_e)+u_i*i_e)
+gen _N6 = e_u_q1only*(i_u_q1only+`i_e_bar') + e_i_q1only*i_u_q1only
+gen _D6 = u_e_q1only*(i_u_q1only+`i_e_bar') + u_i_q1only*`i_e_bar'
+gen ur_cf3_ie = 100 * _N6 / (_N6 + _D6)
+drop _N6 _D6
 
 * Grafico
 twoway ///
-    (line ur            anno, lcolor(black)        lwidth(medthick)) ///
-    (line ur_ss3        anno, lcolor(black)        lwidth(medium) lp(dash)) ///
-    (line ur_cf3_find   anno, lcolor(navy)         lwidth(medium) lp(longdash)) ///
-    (line ur_cf3_sep    anno, lcolor(cranberry)    lwidth(medium) lp(longdash)) ///
-    (line ur_cf3_inact  anno, lcolor(forest_green) lwidth(medium) lp(shortdash)) ///
-    (line ur_cf3_enonE  anno, lcolor(orange)       lwidth(medium) lp(shortdash_dot)), ///
+    (line ur          anno, lcolor(black)        lwidth(medthick)) ///
+    (line ur_ss3      anno, lcolor(black)        lwidth(medium) lp(dash)) ///
+    (line ur_cf3_ue   anno, lcolor(navy)         lwidth(medium) lp(longdash)) ///
+    (line ur_cf3_eu   anno, lcolor(cranberry)    lwidth(medium) lp(longdash)) ///
+    (line ur_cf3_ei   anno, lcolor(forest_green) lwidth(medium) lp(shortdash)) ///
+    (line ur_cf3_ui   anno, lcolor(orange)       lwidth(medium) lp(shortdash)) ///
+    (line ur_cf3_iu   anno, lcolor(purple)       lwidth(medium) lp(dot)) ///
+    (line ur_cf3_ie   anno, lcolor(sienna)       lwidth(medium) lp(dot)), ///
     xlabel(2004(2)2025) xtitle("") ///
     ytitle("Tasso di disoccupazione (%)") ylab(, angle(0)) ///
     legend(order(1 "Osservato" 2 "Steady-state (3 flussi)" ///
-                 3 "CF: solo U→E varia" 4 "CF: solo E→U varia" ///
-                 5 "CF: solo flussi I variano" 6 "CF: solo E→nonE varia") row(3)) ///
+                 3 "CF: U→E fisso" 4 "CF: E→U fisso" ///
+                 5 "CF: E→I fisso" 6 "CF: U→I fisso" ///
+                 7 "CF: I→U fisso" 8 "CF: I→E fisso") row(4)) ///
     graphregion(color(white)) plotregion(color(white)) ///
     name(fig3b, replace)
 *graph export ${graphs}/fig3_pannello_b.png, replace
 
-* -- Robustezza: steady-state e CF1 con tutti i trimestri (2013-2025) --
-gen _D3_4q   = u_e*(i_u+i_e) + i_e*u_i                 if anno >= 2014
-gen _piU3_4q = (e_u*(i_u+i_e) + i_u*e_i) / _D3_4q      if anno >= 2014
-gen _piI3_4q = (e_i*(u_e+u_i) + e_u*u_i) / _D3_4q      if anno >= 2014
-gen ur_ss3_4q = 100 * _piU3_4q / (1 + _piU3_4q + _piI3_4q)
-drop _D3_4q _piU3_4q _piI3_4q
-
-* Per i 6 tassi dei 4 trimestri, pre-crisi calcolato sulla parte 2013-2019
-foreach r in e_u u_e e_i u_i i_u i_e {
-    quietly summ `r' if anno >= 2014 & anno <= 2019
-    local `r'_bar_4q = r(mean)
-}
-local D_cf1_4q "u_e*(`i_u_bar_4q'+`i_e_bar_4q') + `i_e_bar_4q'*`u_i_bar_4q'"
-gen _D1_4q = `D_cf1_4q'                                              if anno >= 2014
-gen _pU1_4q = (`e_u_bar_4q'*(`i_u_bar_4q'+`i_e_bar_4q') + `i_u_bar_4q'*`e_i_bar_4q') / _D1_4q
-gen _pI1_4q = (`e_i_bar_4q'*(u_e+`u_i_bar_4q') + `e_u_bar_4q'*`u_i_bar_4q') / _D1_4q
-gen ur_cf3_find_4q = 100 * _pU1_4q / (1 + _pU1_4q + _pI1_4q)
-drop _D1_4q _pU1_4q _pI1_4q
+* -- Robustezza: steady-state con tutti i trimestri (2013-2025) --
+gen _NUM3_4q = e_u*(i_u+i_e) + e_i*i_u   if anno >= 2014
+gen _DEN3_4q = u_e*(i_u+i_e) + u_i*i_e   if anno >= 2014
+gen ur_ss3_4q = 100 * _NUM3_4q / (_NUM3_4q + _DEN3_4q)
+drop _NUM3_4q _DEN3_4q
 
 preserve
-    keep anno ur ur_ss3 ur_cf3_find ur_cf3_sep ur_cf3_inact ur_cf3_enonE ///
-              ur_ss3_4q ur_cf3_find_4q
+    keep anno ur ur_ss3 ur_cf3_ue ur_cf3_eu ur_cf3_ei ur_cf3_ui ur_cf3_iu ur_cf3_ie ///
+              ur_ss3_4q
     sort anno
-    label var anno                "Anno"
-    label var ur                  "Tasso di disoccupazione osservato"
-    label var ur_ss3              "Steady-state (3 flussi, Q1)"
-    label var ur_cf3_find         "CF: solo U→E varia (Q1, rif. 2004-07)"
-    label var ur_cf3_sep          "CF: solo E→U varia (Q1, rif. 2004-07)"
-    label var ur_cf3_inact        "CF: solo flussi I variano (Q1)"
-    label var ur_cf3_enonE        "CF: solo E→nonE varia (Q1)"
-    label var ur_ss3_4q           "Steady-state (3 flussi, 4 trim.)"
-    label var ur_cf3_find_4q      "CF: solo U→E varia (4 trim., rif. 2013-19)"
+    label var anno          "Anno"
+    label var ur            "Tasso di disoccupazione osservato"
+    label var ur_ss3        "Steady-state (3 flussi, Shimer 2012, Q1)"
+    label var ur_cf3_ue     "CF: U→E fisso al 2004-07"
+    label var ur_cf3_eu     "CF: E→U fisso al 2004-07"
+    label var ur_cf3_ei     "CF: E→I fisso al 2004-07"
+    label var ur_cf3_ui     "CF: U→I fisso al 2004-07"
+    label var ur_cf3_iu     "CF: I→U fisso al 2004-07"
+    label var ur_cf3_ie     "CF: I→E fisso al 2004-07"
+    label var ur_ss3_4q     "Steady-state (3 flussi, 4 trim.)"
     export excel using "`figfile'", sheet("Fig3_pannello_b") sheetreplace firstrow(varlabels)
 restore
 
-drop ur_ss3 ur_cf3_* ur_ss3_4q ur_cf3_find_4q
+drop ur_ss3 ur_cf3_* ur_ss3_4q
