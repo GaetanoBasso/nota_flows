@@ -95,12 +95,12 @@ local f_bar19 = r(mean)
 gen ur_cf1b_find_19 = 100 * `s_bar19' / (`s_bar19' + u_e_q1only)
 gen ur_cf1b_sep_19  = 100 * e_u_q1only / (e_u_q1only + `f_bar19')
 
-* Grafico principale (riferimento 2004-2007)
+* Grafico principale (riferimento 2004-2019)
 twoway ///
     (line ur             anno, lcolor(black)     lwidth(medthick)) ///
     (line ur_ss2         anno, lcolor(black)     lwidth(medium) lp(dash)) ///
-    (line ur_cf1b_find_07 anno, lcolor(navy)     lwidth(medium) lp(longdash)) ///
-    (line ur_cf1b_sep_07  anno, lcolor(cranberry) lwidth(medium) lp(longdash)), ///
+    (line ur_cf1b_find_19 anno, lcolor(navy)     lwidth(medium) lp(longdash)) ///
+    (line ur_cf1b_sep_19  anno, lcolor(cranberry) lwidth(medium) lp(longdash)), ///
     xlabel(2004(2)2025) xtitle("") ///
     ytitle("Tasso di disoccupazione (%)") ylab(, angle(0)) ///
     legend(order(1 "Osservato" 2 "Steady-state (2 flussi)" ///
@@ -197,9 +197,9 @@ restore
    π_E ∝ λ_UE·(λ_IU+λ_IE) + λ_UI·λ_IE  =  u_e*(i_u+i_e) + u_i*i_e
    u*  = π_U/(π_U+π_E)  [U/(E+U), quota sulla forza lavoro]
 
- Sei controfattuali (riferimento pre-crisi 2004-2007), sull'intero periodo:
-   per ciascuno UN flusso varia liberamente, gli altri cinque sono fissi
-   alla media 2004-2007 (stesso schema di Fig 1B sul modello a 2 stati).
+ Sei controfattuali (riferimento pre-COVID 2004-2019, stesso schema di Fig 1B):
+   per ciascuno UN flusso varia liberamente sull'intero periodo,
+   gli altri cinque sono fissi alla media 2004-2019.
    CF_ue: U->E varia   CF_eu: E->U varia   CF_ei: E->I varia
    CF_ui: U->I varia   CF_iu: I->U varia   CF_ie: I->E varia
 
@@ -212,43 +212,43 @@ gen _DEN3q = u_e_q1only*(i_u_q1only+i_e_q1only) + u_i_q1only*i_e_q1only
 gen ur_ss3  = 100 * _NUM3q / (_NUM3q + _DEN3q)
 drop _NUM3q _DEN3q
 
-* -- Medie pre-crisi 2004-2007 per i 6 tassi (stessa finestra di Fig 1B) --
+* -- Medie pre-COVID 2004-2019 per i 6 tassi (stessa finestra di Fig 1B) --
 foreach r in e_u u_e e_i u_i i_u i_e {
-    quietly summ `r'_q1only if anno <= 2007
+    quietly summ `r'_q1only if anno <= 2019
     local `r'_b = r(mean)
 }
 
-* CF_ue: U->E varia; e_u, e_i, u_i, i_u, i_e fissi al 2004-2007
+* CF_ue: U->E varia; e_u, e_i, u_i, i_u, i_e fissi al 2004-2019
 gen _N1 = `e_u_b'*(`i_u_b'+`i_e_b') + `e_i_b'*`i_u_b'
 gen _D1 = u_e_q1only*(`i_u_b'+`i_e_b') + `u_i_b'*`i_e_b'
 gen ur_cf3_ue = 100 * _N1 / (_N1 + _D1)
 drop _N1 _D1
 
-* CF_eu: E->U varia; u_e, e_i, u_i, i_u, i_e fissi al 2004-2007
+* CF_eu: E->U varia; u_e, e_i, u_i, i_u, i_e fissi al 2004-2019
 gen _N2 = e_u_q1only*(`i_u_b'+`i_e_b') + `e_i_b'*`i_u_b'
 gen _D2 = `u_e_b'*(`i_u_b'+`i_e_b') + `u_i_b'*`i_e_b'
 gen ur_cf3_eu = 100 * _N2 / (_N2 + _D2)
 drop _N2 _D2
 
-* CF_ei: E->I varia; e_u, u_e, u_i, i_u, i_e fissi al 2004-2007
+* CF_ei: E->I varia; e_u, u_e, u_i, i_u, i_e fissi al 2004-2019
 gen _N3 = `e_u_b'*(`i_u_b'+`i_e_b') + e_i_q1only*`i_u_b'
 gen _D3 = `u_e_b'*(`i_u_b'+`i_e_b') + `u_i_b'*`i_e_b'
 gen ur_cf3_ei = 100 * _N3 / (_N3 + _D3)
 drop _N3 _D3
 
-* CF_ui: U->I varia; e_u, u_e, e_i, i_u, i_e fissi al 2004-2007
+* CF_ui: U->I varia; e_u, u_e, e_i, i_u, i_e fissi al 2004-2019
 gen _N4 = `e_u_b'*(`i_u_b'+`i_e_b') + `e_i_b'*`i_u_b'
 gen _D4 = `u_e_b'*(`i_u_b'+`i_e_b') + u_i_q1only*`i_e_b'
 gen ur_cf3_ui = 100 * _N4 / (_N4 + _D4)
 drop _N4 _D4
 
-* CF_iu: I->U varia; e_u, u_e, e_i, u_i, i_e fissi al 2004-2007
+* CF_iu: I->U varia; e_u, u_e, e_i, u_i, i_e fissi al 2004-2019
 gen _N5 = `e_u_b'*(i_u_q1only+`i_e_b') + `e_i_b'*i_u_q1only
 gen _D5 = `u_e_b'*(i_u_q1only+`i_e_b') + `u_i_b'*`i_e_b'
 gen ur_cf3_iu = 100 * _N5 / (_N5 + _D5)
 drop _N5 _D5
 
-* CF_ie: I->E varia; e_u, u_e, e_i, u_i, i_u fissi al 2004-2007
+* CF_ie: I->E varia; e_u, u_e, e_i, u_i, i_u fissi al 2004-2019
 gen _N6 = `e_u_b'*(`i_u_b'+i_e_q1only) + `e_i_b'*`i_u_b'
 gen _D6 = `u_e_b'*(`i_u_b'+i_e_q1only) + `u_i_b'*i_e_q1only
 gen ur_cf3_ie = 100 * _N6 / (_N6 + _D6)
@@ -287,12 +287,12 @@ preserve
     label var anno          "Anno"
     label var ur            "Tasso di disoccupazione osservato"
     label var ur_ss3        "Steady-state (3 flussi, Shimer 2012, Q1)"
-    label var ur_cf3_ue     "CF: U->E varia, altri 5 fissi al 2004-07"
-    label var ur_cf3_eu     "CF: E->U varia, altri 5 fissi al 2004-07"
-    label var ur_cf3_ei     "CF: E->I varia, altri 5 fissi al 2004-07"
-    label var ur_cf3_ui     "CF: U->I varia, altri 5 fissi al 2004-07"
-    label var ur_cf3_iu     "CF: I->U varia, altri 5 fissi al 2004-07"
-    label var ur_cf3_ie     "CF: I->E varia, altri 5 fissi al 2004-07"
+    label var ur_cf3_ue     "CF: U->E varia, altri 5 fissi al 2004-19"
+    label var ur_cf3_eu     "CF: E->U varia, altri 5 fissi al 2004-19"
+    label var ur_cf3_ei     "CF: E->I varia, altri 5 fissi al 2004-19"
+    label var ur_cf3_ui     "CF: U->I varia, altri 5 fissi al 2004-19"
+    label var ur_cf3_iu     "CF: I->U varia, altri 5 fissi al 2004-19"
+    label var ur_cf3_ie     "CF: I->E varia, altri 5 fissi al 2004-19"
     label var ur_ss3_4q     "Steady-state (3 flussi, 4 trim.)"
     export excel using "`figfile'", sheet("Fig3_pannello_b") sheetreplace firstrow(varlabels)
 restore
